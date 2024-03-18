@@ -244,6 +244,37 @@ class PromptServer():
                         original_pil.save(filepath, compress_level=4, pnginfo=metadata)
 
             return image_upload(post, image_save_function)
+        @routes.get("/viewlatest")
+        async def view_latest_image(request):
+            # 获取最新的文件名
+            latest_filename = get_latest_filename()
+
+            if latest_filename:
+                # 构建文件的完整路径
+                file_path = os.path.join(folder_paths.get_output_directory(), latest_filename)
+
+                if os.path.isfile(file_path):
+                    # 读取文件内容并返回
+                    with open(file_path, "rb") as file:
+                        image_data = file.read()
+                        return web.Response(body=image_data, content_type='image/png')  # 假设文件是 PNG 格式
+                else:
+                    return web.Response(text="Latest image not found", status=404)
+            else:
+                return web.Response(text="No latest image available", status=404)
+
+        def get_latest_filename():
+            # 在这里编写代码以获取最新文件的文件名
+            # 这可以是扫描目标目录并找到最新的文件名的代码
+            # 返回最新的文件名或者None（如果没有找到最新文件）
+            # 这里仅是示例，您需要根据实际情况编写代码
+            output_directory = folder_paths.get_output_directory()
+            if os.path.isdir(output_directory):
+                files = os.listdir(output_directory)
+                files.sort(key=os.path.getmtime, reverse=True)
+                if files:
+                    return files[0]  # 返回最新的文件名
+            return None
 
         @routes.get("/view")
         async def view_image(request):
