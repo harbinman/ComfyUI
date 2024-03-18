@@ -271,10 +271,12 @@ class PromptServer():
             output_directory = "/ComfyUI/output/"
             if os.path.isdir(output_directory):
                 files = os.listdir(output_directory)
+                files = [os.path.join(output_directory, file) for file in files]  # 将文件名与路径拼接
                 files.sort(key=os.path.getmtime, reverse=True)
                 if files:
-                    return files[0]  # 返回最新的文件名
+                    return files[0]  # 返回最新的文件名（包含完整路径）
             return None
+
 
 
         @routes.get("/view")
