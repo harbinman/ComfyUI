@@ -251,7 +251,7 @@ class PromptServer():
 
             if latest_filename:
                 # 构建文件的完整路径
-                file_path = os.path.join("/ComfyUI/output", latest_filename)
+                file_path = os.path.join("/ComfyUI/output/", latest_filename)
 
                 if os.path.isfile(file_path):
                     # 读取文件内容并返回
@@ -268,7 +268,7 @@ class PromptServer():
             # 这可以是扫描目标目录并找到最新的文件名的代码
             # 返回最新的文件名或者None（如果没有找到最新文件）
             # 这里仅是示例，您需要根据实际情况编写代码
-            output_directory = "/ComfyUI/output"
+            output_directory = "/ComfyUI/output/"
             if os.path.isdir(output_directory):
                 files = os.listdir(output_directory)
                 files.sort(key=os.path.getmtime, reverse=True)
