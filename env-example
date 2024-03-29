@@ -1,5 +1,5 @@
 # 从环境变量中获取 AWS 凭证和 S3 存储桶名称
 AWS_ACCESS_KEY = 
 AWS_SECRET_KEY = 
-AWS_REGION = 
-S3_BUCKET_NAME = 
+AWS_REGION = ap-southease-1
+S3_BUCKET_NAME = ai-dealt
