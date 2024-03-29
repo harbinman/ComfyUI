@@ -19,6 +19,10 @@ import aiohttp
 from aiohttp import web
 import logging
 
+
+import boto3
+from botocore.exceptions import NoCredentialsError
+
 import mimetypes
 from comfy.cli_args import args
 import comfy.utils
@@ -276,7 +280,48 @@ class PromptServer():
                 if files:
                     return files[0]  # 返回最新的文件名（包含完整路径）
             return None
+        @routes.get("/uploadtos3")
+        async def upload_latest_to_s3(request):
+            try:
+                # 从环境变量中获取 AWS 凭证和 S3 存储桶名称
+                aws_access_key = os.environ.get('AWS_ACCESS_KEY')
+                aws_secret_key = os.environ.get('AWS_SECRET_KEY')
+                aws_region = os.environ.get('AWS_REGION')
+                s3_bucket_name = os.environ.get('S3_BUCKET_NAME')
 
+                if not all([aws_access_key, aws_secret_key, aws_region,s3_bucket_name]):
+                    raise ValueError("AWS credentials or region not found in environment variables")
+                # 从 POST 请求中获取文件名
+                data = await request.post()
+                filename = data.get('filename')
+
+                if not filename:
+                    return web.Response(text="Filename not provided in the request", status=400)
+                # 创建 S3 客户端
+                s3 = boto3.client('s3', aws_access_key_id=aws_access_key, aws_secret_access_key=aws_secret_key, region_name=aws_region)
+
+                # 获取最新的文件名
+                latest_filename = get_latest_filename()
+
+                if latest_filename:
+                    # 构建文件的完整路径
+                    file_path = os.path.join("/ComfyUI/output/", latest_filename)
+
+                    # 检查文件是否存在
+                    if os.path.isfile(file_path):
+                        # 使用 Boto3 将文件上传到 S3 存储桶，并指定 S3 上的文件名为 POST 请求中传入的文件名
+                        with open(file_path, "rb") as file:
+                            s3.upload_fileobj(file, s3_bucket_name, filename)
+
+                        return web.Response(text=f"File '{filename}' uploaded to S3 successfully", status=200)
+                    else:
+                        return web.Response(text="Latest image not found", status=404)
+                else:
+                    return web.Response(text="No latest image available", status=404)
+            except NoCredentialsError:
+                return web.Response(text="AWS credentials not found", status=500)
+            except Exception as e:
+                return web.Response(text=str(e), status=500)
 
 
         @routes.get("/view")
