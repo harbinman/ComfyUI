@@ -280,7 +280,7 @@ class PromptServer():
                 if files:
                     return files[0]  # 返回最新的文件名（包含完整路径）
             return None
-        @routes.get("/uploadtos3")
+        @routes.post("/uploadtos3")
         async def upload_latest_to_s3(request):
             try:
                 # 从环境变量中获取 AWS 凭证和 S3 存储桶名称
@@ -292,7 +292,7 @@ class PromptServer():
                 if not all([aws_access_key, aws_secret_key, aws_region,s3_bucket_name]):
                     raise ValueError("AWS credentials or region not found in environment variables")
                 # 从 POST 请求中获取文件名
-                data = await request.post()
+                data = await request.json()
                 filename = data.get('filename')
 
                 if not filename:
